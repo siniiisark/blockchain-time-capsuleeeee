@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockchain Time Capsule</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom, #6a11cb, #2575fc);
+      color: white;
+      text-align: center;
+    }
+
+    header {
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    main {
+      margin: 20px auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+    }
+
+    form {
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      text-align: left;
+    }
+
+    input[type="text"], input[type="date"], button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    input[type="text"], input[type="date"] {
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #333;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #connect-wallet {
+      background-color: #007bff;
+      margin-bottom: 20px;
+    }
+
+    #connect-wallet:hover {
+      background-color: #0056b3;
+    }
+
+    #error-message {
+      color: red;
+      margin: 10px 0;
+      padding: 10px;
+      background-color: rgba(255, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <header>Blockchain-Based Time Capsule</header>
+  <main>
+    <div id="error-message"></div>
+    <button id="connect-wallet">Connect Wallet</button>
+
+    <form id="create-capsule-form">
+      <h2>Create Capsule</h2>
+      <label for="capsule-id">Capsule ID</label>
+      <input type="text" id="capsule-id" placeholder="Enter a unique ID" required>
+
+      <label for="capsule-message">Message</label>
+      <input type="text" id="capsule-message" placeholder="Enter your message" required>
+
+      <label for="capsule-date">Unlock Date</label>
+      <input type="date" id="capsule-date" required>
+
+      <button type="submit">Create Capsule</button>
+    </form>
+
+    <form id="view-capsule-form">
+      <h2>View Capsule</h2>
+      <label for="view-capsule-id">Capsule ID</label>
+      <input type="text" id="view-capsule-id" placeholder="Enter the capsule ID" required>
+
+      <button type="submit">View Capsule</button>
+    </form>
+  </main>
+
+  <script>
+    
+function loadEthersScript() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js';
+    script.async = true;
+
+    script.onload = () => {
+      console.log('Ethers.js loaded successfully');
+      resolve();
+    };
+
+    script.onerror = (error) => {
+      console.error('Failed to load Ethers.js', error);
+      reject(new Error('Ethers.js failed to load'));
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
+// Main initialization function
+async function initApp() {
+  const errorMessageEl = document.getElementById('error-message');
+  
+  try {
+    // Manually load Ethers.js
+    await loadEthersScript();
+
+    // Check for Ethers.js and MetaMask
+    if (typeof ethers === 'undefined') {
+      throw new Error('Ethers.js is not defined');
+    }
+
+    if (typeof window.ethereum === 'undefined') {
+      throw new Error('MetaMask is not detected. Please install MetaMask.');
+    }
+
+    // Setup the app if everything is loaded
+    setupBlockchainApp();
+  } catch (error) {
+    console.error('Initialization error:', error);
+    errorMessageEl.textContent = error.message;
+  }
+}
+
+function setupBlockchainApp() {
+  const contractAddress = "0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3";
+  const abi = [
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: false, internalType: "string", name: "id", type: "string" },
+        { indexed: true, internalType: "address", name: "creator", type: "address" },
+        { indexed: false, internalType: "uint256", name: "unlockTime", type: "uint256" },
+      ],
+      name: "CapsuleCreated",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: false, internalType: "string", name: "id", type: "string" },
+        { indexed: false, internalType: "string", name: "message", type: "string" },
+      ],
+      name: "CapsuleViewed",
+      type: "event",
+    },
+    {
+      inputs: [
+        { internalType: "string", name: "_id", type: "string" },
+        { internalType: "string", name: "_message", type: "string" },
+        { internalType: "uint256", name: "_unlockTime", type: "uint256" },
+      ],
+      name: "createCapsule",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [{ internalType: "string", name: "_id", type: "string" }],
+      name: "isCapsuleReady",
+      outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [{ internalType: "string", name: "_id", type: "string" }],
+      name: "viewCapsule",
+      outputs: [{ internalType: "string", name: "", type: "string" }],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+  ];
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  const contract = new ethers.Contract(contractAddress, abi, signer);
+
+  const connectButton = document.getElementById("connect-wallet");
+  const createCapsuleForm = document.getElementById("create-capsule-form");
+  const viewCapsuleForm = document.getElementById("view-capsule-form");
+  const errorMessageEl = document.getElementById('error-message');
+
+  connectButton.addEventListener("click", async () => {
+    try {
+      await provider.send("eth_requestAccounts", []);
+      const userAddress = await signer.getAddress();
+      connectButton.innerText = `Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+      errorMessageEl.textContent = '';
+    } catch (error) {
+      console.error("Wallet connection error:", error);
+      errorMessageEl.textContent = `Wallet connection failed: ${error.message}`;
+    }
+  });
+
+  createCapsuleForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("capsule-id").value;
+    const message = document.getElementById("capsule-message").value;
+    const unlockTime = Math.floor(new Date(document.getElementById("capsule-date").value).getTime() / 1000);
+
+    try {
+      const tx = await contract.createCapsule(id, message, unlockTime);
+      await tx.wait();
+      alert("Capsule created successfully!");
+      errorMessageEl.textContent = '';
+    } catch (error) {
+      console.error("Capsule creation error:", error);
+      errorMessageEl.textContent = `Capsule creation failed: ${error.message}`;
+    }
+  });
+
+  viewCapsuleForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("view-capsule-id").value;
+
+    try {
+      const isReady = await contract.isCapsuleReady(id);
+      if (!isReady) {
+        alert("Capsule is not ready to be viewed yet.");
+        return;
+      }
+      const message = await contract.viewCapsule(id);
+      alert(`Capsule Message: ${message}`);
+      errorMessageEl.textContent = '';
+    } catch (error) {
+      console.error("Capsule viewing error:", error);
+      errorMessageEl.textContent = `Capsule viewing failed: ${error.message}`;
+    }
+  });
+}
+
+// Initialize the app when the page loads
+window.addEventListener('load', initApp);
+</script>
+</body>
+</html>
