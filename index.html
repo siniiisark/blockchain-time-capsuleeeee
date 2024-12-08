@@ -158,52 +158,9 @@ async function initApp() {
 }
 
 function setupBlockchainApp() {
-  const contractAddress = "0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3";
-  const abi = [
-    {
-      anonymous: false,
-      inputs: [
-        { indexed: false, internalType: "string", name: "id", type: "string" },
-        { indexed: true, internalType: "address", name: "creator", type: "address" },
-        { indexed: false, internalType: "uint256", name: "unlockTime", type: "uint256" },
-      ],
-      name: "CapsuleCreated",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        { indexed: false, internalType: "string", name: "id", type: "string" },
-        { indexed: false, internalType: "string", name: "message", type: "string" },
-      ],
-      name: "CapsuleViewed",
-      type: "event",
-    },
-    {
-      inputs: [
-        { internalType: "string", name: "_id", type: "string" },
-        { internalType: "string", name: "_message", type: "string" },
-        { internalType: "uint256", name: "_unlockTime", type: "uint256" },
-      ],
-      name: "createCapsule",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [{ internalType: "string", name: "_id", type: "string" }],
-      name: "isCapsuleReady",
-      outputs: [{ internalType: "bool", name: "", type: "bool" }],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [{ internalType: "string", name: "_id", type: "string" }],
-      name: "viewCapsule",
-      outputs: [{ internalType: "string", name: "", type: "string" }],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
+  const contractAddress = "";
+  const abi = 
+    
   ];
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
